@@ -60,6 +60,8 @@ static class CommentServer {
 		const int FPS = 24;
 		const int VISIBLE_SEC = 3;
 		const int TOP_OFFSET = 20;
+		string CENTER_STRING;
+		int CENTER_STRING_WIDTH;
 		int LINE_HEIGHT;
 		Font FONT;
 
@@ -104,10 +106,10 @@ static class CommentServer {
 			var g = Graphics.FromImage(canvas);
 
 			g.DrawString(
-				"[CS]",
+				CENTER_STRING,
 				FONT,
 				Brushes.Black,
-				0,
+				p.Width / 2 - CENTER_STRING_WIDTH / 2,
 				p.Height - LINE_HEIGHT
 			);
 
@@ -178,10 +180,9 @@ static class CommentServer {
 			// };
 
 			foreach (var s in Screen.AllScreens) {
-				if (s.Primary) continue;
-
 				Location = s.Bounds.Location;
 				Size = s.Bounds.Size;
+				if (!s.Primary) break;
 			}
 
 			TopMost = true;
@@ -196,9 +197,12 @@ static class CommentServer {
 			Controls.Add(p);
 		}
 
-		public Form1() {
-			FONT = new Font("Myrica M", 56, FontStyle.Bold);
-			LINE_HEIGHT = TextRenderer.MeasureText("あ", FONT).Height;
+		public Form1(string centerString, int fontSize) {
+			FONT = new Font("Myrica M", fontSize, FontStyle.Bold);
+			CENTER_STRING = centerString;
+			Size s = TextRenderer.MeasureText(centerString, FONT);
+			LINE_HEIGHT = s.Height;
+			CENTER_STRING_WIDTH = s.Width;
 
 			InitializeComponent();
 			StartServer(this);
@@ -287,9 +291,21 @@ static class CommentServer {
 	}
 
 	static void Main(string[] Args) {
+		string centerString;
+		int fontSize;
+		if(Args.Length >= 2){
+			fontSize = Int32.Parse(Args[1]);
+		} else {
+			fontSize = 56;
+		}
+		if(Args.Length >= 1){
+			centerString = Args[0];
+		} else {
+			centerString = " ";
+		}
 		Application.EnableVisualStyles();
 		Application.SetCompatibleTextRenderingDefault(false);
-		Application.Run(new Form1());
+		Application.Run(new Form1(centerString, fontSize));
 	}
 }
 

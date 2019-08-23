@@ -20,6 +20,10 @@
 			const sock = new WebSocket(location.href.replace('http', 'ws'));
 			const sendMes = () => {
 				const comment = document.getElementById('comment');
+				if(sock.readyState != 1) {
+					if(confirm("Connection failed. Reload?"))
+						location.href = location.href;
+				}
 				if (comment.value == '') {
 					return;
 				}
@@ -31,7 +35,6 @@
 					sendMes();
 				}
 			}
-			
 		</script>
 	</head>
 	<body>
