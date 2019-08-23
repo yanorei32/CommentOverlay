@@ -1,0 +1,45 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<meta name=viewport content="width=device-width,initial-scale=1">
+		<style>
+			html, body {
+				margin: 0;
+				width: 100%;
+			}
+			.container {
+				font-family: monospace;
+				max-width: 800px;
+				margin: auto;
+				width: calc(100%-20px);
+				padding-left: 10px;
+				padding-right:10px;
+			}
+		</style>
+		<script>
+			const sock = new WebSocket(location.href.replace('http', 'ws'));
+			const sendMes = () => {
+				const comment = document.getElementById('comment');
+				if (comment.value == '') {
+					return;
+				}
+				sock.send(comment.value);
+				comment.value = '';
+			};
+			const key = (e) => {
+				if(e.keyCode == 13) {
+					sendMes();
+				}
+			}
+			
+		</script>
+	</head>
+	<body>
+		<div class=container>
+			<h1>Hello</h1>
+			<input type=text id=comment placeholder=Comment onkeypress=key(event)>
+			<input type=button value=Send onclick=sendMes()>
+		</div>
+	</body>
+</html>
+
