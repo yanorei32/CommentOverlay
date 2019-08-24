@@ -57,22 +57,18 @@ static class CommentServer {
 
 	class Form1 : Form {
 		public List<Comment> comments = new List<Comment>();
-		const int FPS = 24;
 		const int VISIBLE_SEC = 3;
-		const int TOP_OFFSET = 20;
+		const int TOP_OFFSET = 30;
+		const int MARGIN_PER_LINE = 10;
 		string CENTER_STRING;
 		int CENTER_STRING_WIDTH;
 		int LINE_HEIGHT;
+		int FPS;
 		Font FONT;
 
 		PictureBox p;
 
 		void keyDown(object sender, KeyEventArgs e) {
-			if (e.KeyCode == Keys.Q) {
-				this.Close();
-				return;
-			}
-
 			PowerPoint.Application p;
 
 			try {
@@ -81,7 +77,14 @@ static class CommentServer {
 				return;
 			}
 
-			if (p == null) {
+			if (p == null)
+				return;
+
+			if (e.KeyCode == Keys.Q) {
+				if (0 < p.SlideShowWindows.Count)
+					p.SlideShowWindows[1].View.Exit();
+
+				this.Close();
 				return;
 			}
 
@@ -101,16 +104,20 @@ static class CommentServer {
 			}
 		}
 
-		void drawComments() {
+		void drawComments(bool force = false) {
+			if (comments.Count == 0 && !force) {
+				return;
+			}
 			var canvas = new Bitmap(p.Width, p.Height);
 			var g = Graphics.FromImage(canvas);
+			g.TextRenderingHint = TextRenderingHint.SystemDefault;;
 
 			g.DrawString(
 				CENTER_STRING,
 				FONT,
 				Brushes.Black,
-				p.Width / 2 - CENTER_STRING_WIDTH / 2,
-				p.Height - LINE_HEIGHT
+				canvas.Width / 2 - CENTER_STRING_WIDTH / 2,
+				canvas.Height - LINE_HEIGHT
 			);
 
 			lock(comments) {
@@ -122,19 +129,24 @@ static class CommentServer {
 						c.setWidth(cw);
 					}
 
-					g.DrawString(
-						c.getText(),
-						FONT,
-						Brushes.MediumSeaGreen,
-						p.Width - c.getDistFromRight(),
-						TOP_OFFSET + LINE_HEIGHT * c.getLinePos()
-					);
+					int posV = TOP_OFFSET + (LINE_HEIGHT + MARGIN_PER_LINE) * c.getLinePos();
 
-					int moveWidth = (p.Width + cw) / (FPS * VISIBLE_SEC);
-					c.move(moveWidth);
-
-					if (p.Width + cw - c.getDistFromRight() < 0)
+					if (posV < canvas.Height)
+						g.DrawString(
+							c.getText(),
+							FONT,
+							Brushes.MediumSeaGreen,
+							canvas.Width - c.getDistFromRight(),
+							posV
+						);
+					else
 						finishedComments.Add(c);
+
+					if (canvas.Width + cw - c.getDistFromRight() < 0)
+						finishedComments.Add(c);
+
+					int moveWidth = (canvas.Width + cw) / (FPS * VISIBLE_SEC);
+					c.move(moveWidth);
 				}
 
 				foreach (var c in finishedComments)
@@ -142,6 +154,7 @@ static class CommentServer {
 			}
 
 			g.Dispose();
+
 			p.Image = canvas;
 		}
 
@@ -152,32 +165,6 @@ static class CommentServer {
 			t.Tick += (sender, e) => {
 				drawComments();
 			};
-
-			// var t2 = new Timer();
-			// t2.Interval = 1000;
-			// t2.Start();
-			// t2.Tick += (sender, e) => {
-			// 	lock(comments) {
-			// 		int pos = 0;
-			// 		for (;;) {
-			// 			bool isUsed = false;
-			// 			foreach (var c in comments) {
-			// 				if (pos == c.getLinePos()) {
-			// 					isUsed = true;
-			// 					break;
-			// 				}
-			// 			}
-            //
-			// 			if (!isUsed) {
-			// 				break;
-			// 			}
-            //
-			// 			pos++;
-			// 		}
-            //
-			// 		comments.Add(new Comment("XX", pos));
-			// 	}
-			// };
 
 			foreach (var s in Screen.AllScreens) {
 				Location = s.Bounds.Location;
@@ -192,20 +179,23 @@ static class CommentServer {
 			TransparencyKey = BackColor;
 			FormBorderStyle = FormBorderStyle.None;
 
+			DoubleBuffered = true;
 			p = new PictureBox();
 			p.Size = Size;
 			Controls.Add(p);
 		}
 
-		public Form1(string centerString, int fontSize) {
+		public Form1(string centerString, int fontSize, int fps) {
 			FONT = new Font("Myrica M", fontSize, FontStyle.Bold);
 			CENTER_STRING = centerString;
 			Size s = TextRenderer.MeasureText(centerString, FONT);
 			LINE_HEIGHT = s.Height;
 			CENTER_STRING_WIDTH = s.Width;
+			FPS = fps;
 
 			InitializeComponent();
 			StartServer(this);
+			drawComments(true);
 		}
 
 	}
@@ -292,20 +282,15 @@ static class CommentServer {
 
 	static void Main(string[] Args) {
 		string centerString;
-		int fontSize;
-		if(Args.Length >= 2){
-			fontSize = Int32.Parse(Args[1]);
-		} else {
-			fontSize = 56;
-		}
-		if(Args.Length >= 1){
-			centerString = Args[0];
-		} else {
-			centerString = " ";
-		}
+		int fontSize, fps;
+
+		fps = Args.Length >= 3 ? Int32.Parse(Args[2]) : 24;
+		fontSize = Args.Length >= 2 ? Int32.Parse(Args[1]) : 56;
+		centerString = Args.Length >= 1 ? Args[0] : " ";
+
 		Application.EnableVisualStyles();
 		Application.SetCompatibleTextRenderingDefault(false);
-		Application.Run(new Form1(centerString, fontSize));
+		Application.Run(new Form1(centerString, fontSize, fps));
 	}
 }
 
