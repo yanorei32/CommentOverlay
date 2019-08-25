@@ -35,6 +35,15 @@
 					sendMes();
 				}
 			}
+			sock.onclose = function(e) {
+				if(e)
+					if(e.code == 1006)
+						alert("Abnormal closed");
+					else
+						alert(e.reason);
+				if(confirm("Connection failed. Reload?"))
+					location.href = location.href;
+			}
 		</script>
 	</head>
 	<body>

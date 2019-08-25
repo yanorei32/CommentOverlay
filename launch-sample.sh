@@ -7,5 +7,6 @@ HOST_PORT=`ipconfig | \
 
 echo http://$HOST_PORT> /dev/clipboard
 
-./comment.exe http://$HOST_PORT ${@:1}
+./comment.exe http://$HOST_PORT ${@:1} \
+	| iconv -f cp932 -t utf-8
 
