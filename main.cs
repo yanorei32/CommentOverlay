@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Text;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -89,6 +90,8 @@ static class CommentServer {
 
 		void drawComments(Graphics g) {
 			firstFrame = false;
+
+			g.TextRenderingHint = TextRenderingHint.SingleBitPerPixel;
 
 			g.DrawString(
 				CENTER_STRING,
