@@ -228,7 +228,7 @@ static class CommentServer {
 		logging("Web", "ws session create: " + ip);
 		while (ws.State == WebSocketState.Open) {
 			try {
-				var buf = new byte[8];
+				var buf = new byte[1024];
 
 				var ret = await ws.ReceiveAsync(
 					new ArraySegment<byte>(buf),
