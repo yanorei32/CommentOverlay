@@ -253,7 +253,7 @@ static class CommentServer {
 
 				if (ret.MessageType != WebSocketMessageType.Text) continue;
 
-				var comment = Encoding.UTF8.GetString(buf);
+				var comment = Encoding.UTF8.GetString(buf).TrimEnd('\0');
 
 				logging("Web", string.Format("recv ({0}): {1}", ip, comment));
 
