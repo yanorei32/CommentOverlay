@@ -2,6 +2,8 @@
 
 This software displays comment on the screen and controls PowerPoint.
 
+<img src=https://user-images.githubusercontent.com/11992915/63655100-56791400-c7be-11e9-95f1-852489bfdaf1.png width=320px>
+
 ## How to build
 
 * Windows 10
